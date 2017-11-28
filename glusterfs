@@ -16,3 +16,107 @@ Desired=Unknown/Install/Remove/Purge/Hold
 ||/ Name                          Version             Architecture        Description
 +++-=============================-===================-===================-================================================================
 ii  python-software-properties    0.96.20.7           all                 manage the repositories that you install software from
+
+2) update the system.
+#apt-get update
+
+3) Install glusterfs-server.
+# apt-get install glusterfs-server
+
+4) Go to the first server(dcosdemo03) and run the following command:	
+#gluster peer probe dcosdemo04
+#gluster peer probe dcosdemo03
+
+above by the host names of the remaining two servers. This command will form a cluster. 
+To know the status of the cluster, execute the following:
+# gluster peer status
+------------------------------------------------------------------------
+root@dcosdemo01:/# ssh dcosdemo03
+root@dcosdemo03's password:
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-98-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+21 packages can be updated.
+0 updates are security updates.
+
+
+*** System restart required ***
+Last login: Tue Nov 28 16:33:40 2017 from 9.111.143.201
+root@dcosdemo03:~# gluster peer status
+Number of Peers: 2
+
+Hostname: dcosdemo04
+Uuid: a3b73541-2c13-4b8d-acd4-64b7ff835ad4
+State: Peer in Cluster (Connected)
+
+Hostname: dcosdemo05
+Uuid: 1382ca1d-d1a4-48ef-997d-377f719c05f2
+State: Peer in Cluster (Connected)
+The output should show that this server is connected to 2 peers.
+-----------------------------------------------------------------
+5) Now execute the same command from the second or third server.
+ gluster peer status
+
+You will again see that there are 2 peers but instead of the hostname of the first server,
+it has registered its IP address. To fix this, run the following command from second(dcosdemo04) or third(dcosdemo05) server:
+	
+ #gluster peer probe dcosdemo03
+
+Now on executing sudo gluster peer status, you will see hostname of the first server and not its IP address.
+
+6) Using fdisk, create a partition /dev/sdb on all the three servers. Format this partition using xfs filesystem.
+?
+1
+	
+sudo mkfs.xfs -i size=512 /dev/sdb1
+
+You can also use ext4 filesystem if you prefer. To format the partition using ext4 filesystem, here is the command:
+?
+1
+	
+sudo mkfs.ext4 /dev/vdb1
+
+7) Mount the above partition as a Gluster brick at /data on all the three servers. You can change the location of the mount if you want.
+?
+1
+2
+	
+sudo mkdir /data
+sudo mount /dev/vdb1 /data
+
+8) The next step is to create one or more volumes in /data. The advantage of creating multiple volumes is that multiple applications can share the same three GlusterFS servers but use three different volumes. Each of these volumes can be mounted on the application server so that the applications can't access other applications' data. In this example, we will create two volumes: files1-volume and files2-volume at the location /data/files1 and /data/files2 respectively. You can use the volume names of your choice.
+?
+1
+2
+	
+sudo mkdir /data/files1
+sudo mkdir /data/files2
+
+9) Create the two GlusterFS volumes.
+?
+1
+2
+	
+sudo gluster volume create files1-volume replica 3 <hostname-1>:/data/files1 <hostname-2>:/data/files1 <hostname-3>:/data/files1
+sudo gluster volume create files2-volume replica 3 <hostname-1>:/data/files2 <hostname-2>:/data/files2 <hostname-3>:/data/files2
+
+Note the word replica. This indicates that we are creating a replicating volume. Also note the number 3 in the commands above. This denotes the number of GlusterFS servers in the cluster. In our case, we have 3. If you have more or less servers, you will need to change this number accordingly and provide information about the mounted GlusterFS brick on each of those servers after that.
+
+You will see an output such as:
+?
+1
+	
+volume create: files1-volume: success: please start the volume to access data
+
+10) Now is the time to start the volume. Make sure to do this step before you try to access the volume via a client library otherwise the client will hang. Execute the following commands:
+?
+1
+2
+	
+sudo gluster volume start files1-volume
+sudo gluster volume start files2-volume
+
+11) To check the status of the volumes, run the following comma
