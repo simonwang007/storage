@@ -67,56 +67,49 @@ it has registered its IP address. To fix this, run the following command from se
 
 Now on executing sudo gluster peer status, you will see hostname of the first server and not its IP address.
 
-6) Using fdisk, create a partition /dev/sdb on all the three servers. Format this partition using xfs filesystem.
-?
-1
+6) Using fdisk, create a partition /dev/sdb on all the three servers. Format this partition using ext4 filesystem.
 	
-sudo mkfs.xfs -i size=512 /dev/sdb1
+#mkfs.ext4 /dev/sdc1
 
-You can also use ext4 filesystem if you prefer. To format the partition using ext4 filesystem, here is the command:
-?
-1
+7) Mount the above partition as a Gluster brick at /test1 on all the three(dcosdemo03,dcosdemo04,dcosdemo05) servers. 
 	
-sudo mkfs.ext4 /dev/vdb1
+#mkdir /test1
+#mount /dev/sdc1 /data
 
-7) Mount the above partition as a Gluster brick at /data on all the three servers. You can change the location of the mount if you want.
-?
-1
-2
+8) The next step is to create one or more volumes in /data. 
+The advantage of creating multiple volumes is that multiple applications can share the same three GlusterFS servers 
+but use three different volumes. Each of these volumes can be mounted on the application server so that the applications 
+can't access other applications' data. In this example, we will create two volumes: test1-volume and test2-volume 
+at the location /data/test1 and /data/test2 respectively. You can use the volume names of your choice.
 	
-sudo mkdir /data
-sudo mount /dev/vdb1 /data
+#mkdir /data/test1
 
-8) The next step is to create one or more volumes in /data. The advantage of creating multiple volumes is that multiple applications can share the same three GlusterFS servers but use three different volumes. Each of these volumes can be mounted on the application server so that the applications can't access other applications' data. In this example, we will create two volumes: files1-volume and files2-volume at the location /data/files1 and /data/files2 respectively. You can use the volume names of your choice.
-?
-1
-2
+9) Create a GlusterFS volumes.
 	
-sudo mkdir /data/files1
-sudo mkdir /data/files2
+#gluster volume create files1-volume replica 3 dcosdemo03:/data/test1 dcosdemo04:/data/test1 dcosdemo05:/data/test1
 
-9) Create the two GlusterFS volumes.
-?
-1
-2
-	
-sudo gluster volume create files1-volume replica 3 <hostname-1>:/data/files1 <hostname-2>:/data/files1 <hostname-3>:/data/files1
-sudo gluster volume create files2-volume replica 3 <hostname-1>:/data/files2 <hostname-2>:/data/files2 <hostname-3>:/data/files2
+This indicates that we are creating a replicating volume. Also note the number 3 in the commands above. 
+This denotes the number of GlusterFS servers in the cluster. In our case, we have 3. If you have more or less servers, 
+you will need to change this number accordingly and provide information about the mounted GlusterFS brick 
+on each of those servers after that.
 
-Note the word replica. This indicates that we are creating a replicating volume. Also note the number 3 in the commands above. This denotes the number of GlusterFS servers in the cluster. In our case, we have 3. If you have more or less servers, you will need to change this number accordingly and provide information about the mounted GlusterFS brick on each of those servers after that.
+You will see an output below:	
+ volume create: test1-vol: success: please start the volume to access data
 
-You will see an output such as:
-?
-1
-	
-volume create: files1-volume: success: please start the volume to access data
+10) Now is the time to start the volume. Run the following commands:
+   #gluster volume start files1-volume
+11) To check the status of the volumes, run the following command:
+   # gluster volume info test1-vol
+   Volume Name: test1-vol
+  Type: Replicate
+  Volume ID: ebc88227-1b0b-4390-abb8-bee0622b43ca
+  Status: Started
+  Number of Bricks: 1 x 3 = 3
+  Transport-type: tcp
+  Bricks:
+  Brick1: dcosdemo03:/data/test1
+  Brick2: dcosdemo04:/data/test1
+  Brick3: dcosdemo05:/data/test1
+  Options Reconfigured:
+  performance.readdir-ahead: on
 
-10) Now is the time to start the volume. Make sure to do this step before you try to access the volume via a client library otherwise the client will hang. Execute the following commands:
-?
-1
-2
-	
-sudo gluster volume start files1-volume
-sudo gluster volume start files2-volume
-
-11) To check the status of the volumes, run the following comma
