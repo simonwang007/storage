@@ -1,1 +1,18 @@
 
+Summary:
+GlusterFS is a distributed File System. In this doc for build a environment of glusterfs, I am able to show you how to create and configure 
+GlusterFS Server on three nodes. You can create different types of GlusterFS volumes. We will only show you how to configure a replicated 
+volume so that if you store a file on one machine, it will get replicated to all the nodes in the cluster. Suppose the hostnames of the 
+three servers on which we want to install GlusterFS server are <bgsr29u11>, <bgsr29u13> and <bgsr29u15>. GlusterFS works better with 
+hostnames instead of IP addresses so we'll use hostnames in the installation procedure
+
+Here are the steps:
+1) Install python-software-properties.
+#apt-get install python-software-properties
+#dpkg -l python-software-properties
+Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name                          Version             Architecture        Description
++++-=============================-===================-===================-================================================================
+ii  python-software-properties    0.96.20.7           all                 manage the repositories that you install software from
