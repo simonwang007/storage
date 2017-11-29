@@ -1,1 +1,114 @@
+Summary:
+GlusterFS is a distributed File System. In this doc for build a environment of glusterfs, I am able to show you how to create and configure 
+GlusterFS Server on three nodes. You can create different types of GlusterFS volumes. We will only show you how to configure a replicated 
+volume so that if you store a file on one machine, it will get replicated to all the nodes in the cluster. Suppose the hostnames of the 
+three servers on which we want to install GlusterFS server are <bgsr29u11>, <bgsr29u13> and <bgsr29u15>. GlusterFS works better with 
+hostnames instead of IP addresses so we'll use hostnames in the installation procedure
+
+Here are the steps:
+1) Install python-software-properties.
+#apt-get install python-software-properties
+#dpkg -l python-software-properties
+Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name                          Version             Architecture        Description
++++-=============================-===================-===================-================================================================
+ii  python-software-properties    0.96.20.7           all                 manage the repositories that you install software from
+
+2) update the system.
+#apt-get update
+
+3) Install glusterfs-server.
+# apt-get install glusterfs-server
+
+4) Go to the first server(dcosdemo03) and run the following command:	
+#gluster peer probe dcosdemo04
+#gluster peer probe dcosdemo03
+
+above by the host names of the remaining two servers. This command will form a cluster. 
+To know the status of the cluster, execute the following:
+# gluster peer status
+------------------------------------------------------------------------
+root@dcosdemo01:/# ssh dcosdemo03
+root@dcosdemo03's password:
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-98-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+21 packages can be updated.
+0 updates are security updates.
+
+
+*** System restart required ***
+Last login: Tue Nov 28 16:33:40 2017 from 9.111.143.201
+root@dcosdemo03:~# gluster peer status
+Number of Peers: 2
+
+Hostname: dcosdemo04
+Uuid: a3b73541-2c13-4b8d-acd4-64b7ff835ad4
+State: Peer in Cluster (Connected)
+
+Hostname: dcosdemo05
+Uuid: 1382ca1d-d1a4-48ef-997d-377f719c05f2
+State: Peer in Cluster (Connected)
+The output should show that this server is connected to 2 peers.
+-----------------------------------------------------------------
+5) Now execute the same command from the second or third server.
+ gluster peer status
+
+You will again see that there are 2 peers but instead of the hostname of the first server,
+it has registered its IP address. To fix this, run the following command from second(dcosdemo04) or third(dcosdemo05) server:
+	
+ #gluster peer probe dcosdemo03
+
+Now on executing sudo gluster peer status, you will see hostname of the first server and not its IP address.
+
+6) Using fdisk, create a partition /dev/sdb on all the three servers. Format this partition using ext4 filesystem.
+	
+#mkfs.ext4 /dev/sdc1
+
+7) Mount the above partition as a Gluster brick at /test1 on all the three(dcosdemo03,dcosdemo04,dcosdemo05) servers. 
+	
+#mkdir /test1
+#mount /dev/sdc1 /data
+
+8) The next step is to create one or more volumes in /data. 
+The advantage of creating multiple volumes is that multiple applications can share the same three GlusterFS servers 
+but use three different volumes. Each of these volumes can be mounted on the application server so that the applications 
+can't access other applications' data. In this example, we will create two volumes: test1-volume and test2-volume 
+at the location /data/test1 and /data/test2 respectively. You can use the volume names of your choice.
+	
+#mkdir /data/test1
+
+9) Create a GlusterFS volumes.
+	
+#gluster volume create files1-volume replica 3 dcosdemo03:/data/test1 dcosdemo04:/data/test1 dcosdemo05:/data/test1
+
+This indicates that we are creating a replicating volume. Also note the number 3 in the commands above. 
+This denotes the number of GlusterFS servers in the cluster. In our case, we have 3. If you have more or less servers, 
+you will need to change this number accordingly and provide information about the mounted GlusterFS brick 
+on each of those servers after that.
+
+You will see an output below:	
+ volume create: test1-vol: success: please start the volume to access data
+
+10) Now is the time to start the volume. Run the following commands:
+   #gluster volume start files1-volume
+11) To check the status of the volumes, run the following command:
+   # gluster volume info test1-vol
+   Volume Name: test1-vol
+  Type: Replicate
+  Volume ID: ebc88227-1b0b-4390-abb8-bee0622b43ca
+  Status: Started
+  Number of Bricks: 1 x 3 = 3
+  Transport-type: tcp
+  Bricks:
+  Brick1: dcosdemo03:/data/test1
+  Brick2: dcosdemo04:/data/test1
+  Brick3: dcosdemo05:/data/test1
+  Options Reconfigured:
+  performance.readdir-ahead: on
 
