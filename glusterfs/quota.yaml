@@ -11,6 +11,8 @@ Step 1 : Before applying the quota on directory which is present in volume we ne
  Step 2 : I have mounted the volume on client at mountpoint (/mnt) and I have created one directory beneath  it.
   # mount -t glusterfs dcosdemo03:/test1-vol /glsfs/
   # mkdir -p /glsfs/folder1;mkdir -p /glsfs/folder2
+  
+  We can defined use below command initially while defining the hard limit.
   # gluster vol quota test1-vol limit-usage /folder1 100MB
      volume quota : success
   # gluster vol quota test1-vol limit-usage /folder2 100MB
@@ -21,3 +23,7 @@ Step 1 : Before applying the quota on directory which is present in volume we ne
  -------------------------------------------------------------------------------------------------------------------------------
 /folder1                                 100.0MB     80%(80.0MB)   0Bytes 100.0MB              No                   No
 /folder2                                 100.0MB     80%(80.0MB)   0Bytes 100.0MB              No                   No
+
+we also can use command as below change while modify the soft limit.
+# gluster vol quota test1-vol limit-usage /folder2 100MB 90%
+  volume quota : success
