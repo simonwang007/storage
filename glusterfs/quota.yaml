@@ -27,3 +27,37 @@ Step 1 : Before applying the quota on directory which is present in volume we ne
 we also can use command as below change while modify the soft limit.
 # gluster vol quota test1-vol limit-usage /folder2 100MB 90%
   volume quota : success
+
+GlusterFS tuning:
+# gluster volume quota test1-vol limit-usage / 29.0GB
+  volume quota : success
+# gluster volume set test1-vol performance.cache-size 4GB (Default 32MB)
+  volume set: success
+# gluster volume set test1-vol performance.io-thread-count 16 (ensure thread not more than 16)
+  volume set: success
+# gluster volume set test1-vol network.ping-timeout 10 (Default 42s)
+  volume set: success
+# gluster volume set test1-vol performance.write-behind-window-size 1024MB (Default 1M)
+  volume set: success
+ # gluster volume info
+
+Volume Name: test1-vol
+Type: Replicate
+Volume ID: ebc88227-1b0b-4390-abb8-bee0622b43ca
+Status: Started
+Number of Bricks: 1 x 3 = 3
+Transport-type: tcp
+Bricks:
+Brick1: dcosdemo03:/data/test1
+Brick2: dcosdemo04:/data/test1
+Brick3: dcosdemo05:/data/test1
+Options Reconfigured:
+performance.write-behind-window-size: 1024MB
+network.ping-timeout: 10
+performance.io-thread-count: 16
+performance.cache-size: 4GB
+features.quota-deem-statfs: on
+features.inode-quota: on
+features.quota: on
+performance.readdir-ahead: on 
+  
