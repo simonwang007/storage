@@ -5,3 +5,11 @@ How to use and seting Quota option in Glusterfs on Ubuntu 16.04.3 LTS
  In this article I am going to show how to use quota option in Glusterfs.
  
 Step 1 : Before applying the quota on directory which is present in volume we need to enable the quota option at volume level.
+# gluster vol quota test1-vol enable
+  volume quota : success
+
+ Step 2 : I have mounted the volume on client at mountpoint (/mnt) and I have created one directory beneath  it.
+  # mount -t glusterfs dcosdemo03:/test1-vol /glsfs/
+  # mkdir -p /glsfs/folder1
+  # gluster vol quota test1-vol limit-usage /folder1 100MB
+     volume quota : success
