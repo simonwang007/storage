@@ -1,0 +1,6 @@
+
+ Applying quota on directory is very common requirement. 
+ In case of gluterfs we are also having the provision of applying the quota on directories. 
+ In this article I am going to show how to use quota option in Glusterfs.
+ 
+Step 1 : Before applying the quota on directory which is present in volume we need to enable the quota option at volume level.
