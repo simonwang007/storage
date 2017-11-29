@@ -1,3 +1,4 @@
+How to use and seting Quota option in Glusterfs on Ubuntu 16.04.3 LTS
 
  Applying quota on directory is very common requirement. 
  In case of gluterfs we are also having the provision of applying the quota on directories. 
